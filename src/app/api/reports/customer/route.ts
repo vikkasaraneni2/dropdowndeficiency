@@ -94,12 +94,10 @@ export async function POST(req: NextRequest) {
         // Start detailed sections on a new page
         try { doc.addPage(); } catch {}
 
-        let subtotal = 0;
         for (const f of allYesFindings) {
             const qty = f.quantity ?? 0;
             const unitPrice = f.unit_price ? Number(f.unit_price) : 0;
             const line = f.line_total ?? (qty * unitPrice);
-            subtotal += line || 0;
             const needsQuote = (f as unknown as { send_to_quote?: boolean }).send_to_quote === true;
             doc.fontSize(12).text(`${f.item_code} — ${f.item_name}${needsQuote ? '  (Needs Quote)' : ''}`);
             doc.moveDown(0.15);

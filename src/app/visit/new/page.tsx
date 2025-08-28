@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { enqueueRequest, saveDraft, clearDraft } from '@/lib/offline';
 import { v4 as uuidv4 } from 'uuid';
 
-const ALL_VERTICALS = [
+const ALL_VERTICALS: readonly string[] = [
 	'All Sites',
 	'Restaurants/Food Service',
 	'Schools/Offices',
@@ -15,7 +15,7 @@ const ALL_VERTICALS = [
 export default function NewVisitPage() {
 	const [siteName, setSiteName] = useState('');
 	const [address, setAddress] = useState('');
-	const [verticals, setVerticals] = useState<string[]>(['All Sites']);
+	const [verticals] = useState<string[]>(['All Sites']);
 	const [techUserId] = useState('tech-demo');
 
 	async function submit() {

@@ -25,9 +25,12 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
 			fetch(`/api/attachments?visitId=${visitId}`).then(r => r.json()),
 		]).then(([fRes, aRes]) => {
 			const attachByFinding: Record<string, { id: string; fileName: string }[]> = {};
-			(aRes.attachments || []).forEach((a: any) => {
-				const key = a.findingId || 'visit';
-				(attachByFinding[key] = attachByFinding[key] || []).push({ id: a.id, fileName: a.fileName });
+			const attachmentsRaw = Array.isArray(aRes.attachments) ? (aRes.attachments as Array<Record<string, unknown>>) : [];
+			attachmentsRaw.forEach((a) => {
+				const key = (typeof a.findingId === 'string' && a.findingId) || 'visit';
+				const id = typeof a.id === 'string' ? a.id : '';
+				const fileName = typeof a.fileName === 'string' ? a.fileName : '';
+				(attachByFinding[key] = attachByFinding[key] || []).push({ id, fileName });
 			});
 			const coerceString = (v: unknown): string => (typeof v === 'string' ? v : '');
 			const coerceNullableString = (v: unknown): string | null => (v == null ? null : String(v));
