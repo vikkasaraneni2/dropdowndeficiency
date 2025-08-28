@@ -29,19 +29,30 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
 				const key = a.findingId || 'visit';
 				(attachByFinding[key] = attachByFinding[key] || []).push({ id: a.id, fileName: a.fileName });
 			});
-			const mapped: ReviewFinding[] = (fRes.findings || []).map((f: any) => ({
-				id: f.id,
-				itemCode: f.itemCode || f.item_code,
-				itemName: f.itemName || f.item_name || f.itemCode,
-				notes: f.notes || '',
-				unit: f.unit || '',
-				quantity: f.quantity ?? null,
-				unitPrice: f.unitPrice || f.unit_price || null,
-				lineTotal: f.lineTotal ?? f.line_total ?? null,
-				attachments: attachByFinding[f.id] || [],
-				sendToQuote: (f.sendToQuote ?? f.send_to_quote) || false,
-				decision: f.decision,
-			}));
+			const coerceString = (v: unknown): string => (typeof v === 'string' ? v : '');
+			const coerceNullableString = (v: unknown): string | null => (v == null ? null : String(v));
+			const coerceNullableNumber = (v: unknown): number | null => (typeof v === 'number' ? v : v == null ? null : Number(v));
+			const isTruthy = (v: unknown): boolean => v === true || v === 'true';
+
+			const mapped: ReviewFinding[] = (fRes.findings || []).map((raw: unknown) => {
+				const f = (raw as Record<string, unknown>) || {};
+				const id = coerceString(f.id);
+				const itemCode = coerceString(f.itemCode ?? f.item_code);
+				const itemName = coerceString(f.itemName ?? f.item_name ?? itemCode);
+				return {
+					id,
+					itemCode,
+					itemName,
+					notes: coerceString(f.notes) || '',
+					unit: coerceString(f.unit) || '',
+					quantity: coerceNullableNumber(f.quantity),
+					unitPrice: coerceNullableString(f.unitPrice ?? f.unit_price),
+					lineTotal: coerceNullableNumber(f.lineTotal ?? f.line_total),
+					attachments: attachByFinding[id] || [],
+					sendToQuote: isTruthy(f.sendToQuote ?? f.send_to_quote),
+					decision: coerceString(f.decision) || undefined,
+				};
+			});
 			setFindings(mapped);
 		});
 	}, [visitId]);
