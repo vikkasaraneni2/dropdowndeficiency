@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 	const chunks: Uint8Array[] = [];
 	doc.on('data', (c: unknown) => chunks.push(c as Uint8Array));
 	const done: Promise<Buffer> = new Promise((resolve) => { doc.on('end', () => resolve(Buffer.concat(chunks))); });
-	const fontName = tryRegisterGeorgia(doc);
+	tryRegisterGeorgia(doc);
 	// Create the first page after selecting a real TTF font
 	(doc as unknown as { addPage: () => void }).addPage();
 	(doc as unknown as { info: Record<string, unknown> }).info = {
@@ -76,7 +76,8 @@ export async function POST(req: NextRequest) {
 				const meta = await sharp(buf).metadata();
 				const format = meta.format || '';
 				if (!['jpeg','jpg','png'].includes(format)) {
-					buf = await sharp(buf).png().toBuffer();
+					const converted = await sharp(buf).png().toBuffer();
+					buf = Buffer.from(converted);
 				}
 			} catch {}
 			const pageW = (doc as unknown as { page: { width: number } }).page.width as number;

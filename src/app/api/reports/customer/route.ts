@@ -121,7 +121,8 @@ export async function POST(req: NextRequest) {
                         const meta = await sharp(buf).metadata();
                         const format = meta.format || '';
                         if (!['jpeg','jpg','png'].includes(format)) {
-                            buf = await sharp(buf).png().toBuffer();
+                            const converted = await sharp(buf).png().toBuffer();
+                            buf = Buffer.from(converted);
                         }
                     } catch (e) { console.warn('[report:customer] sharp meta/convert warning for', img.file_name, String(e)); }
                     const pageW = (doc as unknown as { page: { width: number } }).page.width as number;
